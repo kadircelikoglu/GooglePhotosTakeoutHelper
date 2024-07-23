@@ -44,7 +44,7 @@ extension Group on Iterable<Media> {
 ///
 /// Returns count of removed
 int removeDuplicates(List<Media> media) {
-  var count = 0;
+  int count = 0;
   final byAlbum = media
       // group by albums as we will merge those later
       // (to *not* compare hashes between albums)
@@ -61,10 +61,7 @@ int removeDuplicates(List<Media> media) {
 
     // note: we are comparing accuracy here tho we do know that *all*
     // of them have it null - i'm leaving this just for sake
-    group.sort((a, b) =>
-        '${a.dateTakenAccuracy ?? 999}${p.basename(a.firstFile.path).length}'
-            .compareTo(
-                '${b.dateTakenAccuracy ?? 999}${p.basename(b.firstFile.path).length}'));
+    group.sort((a, b) => '${a.dateTakenAccuracy ?? 999}${p.basename(a.firstFile.path).length}'.compareTo('${b.dateTakenAccuracy ?? 999}${p.basename(b.firstFile.path).length}'));
     // get list of all except first
     for (final e in group.sublist(1)) {
       // remove them from media
@@ -90,8 +87,7 @@ void findAlbums(List<Media> allMedia) {
       (allFiles, e) => allFiles..addAll(e.files),
     );
     // sort by best date extraction
-    group.sort((a, b) =>
-        (a.dateTakenAccuracy ?? 999).compareTo((b.dateTakenAccuracy ?? 999)));
+    group.sort((a, b) => (a.dateTakenAccuracy ?? 999).compareTo((b.dateTakenAccuracy ?? 999)));
     // remove original dirty ones
     for (final e in group) {
       allMedia.remove(e);

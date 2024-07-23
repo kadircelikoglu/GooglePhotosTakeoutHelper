@@ -3,7 +3,7 @@ import 'package:unorm_dart/unorm_dart.dart' as unorm;
 
 import 'media.dart';
 
-const extraFormats = [
+const List<String> extraFormats = [
   // EN/US - thanks @DalenW
   '-edited',
   '-effects',
@@ -31,7 +31,7 @@ const extraFormats = [
 /// Returns count of removed
 int removeExtras(List<Media> media) {
   final copy = media.toList();
-  var count = 0;
+  int count = 0;
   for (final m in copy) {
     final name = p.withoutExtension(p.basename(m.firstFile.path)).toLowerCase();
     for (final extra in extraFormats) {

@@ -94,8 +94,7 @@ Stream<int> moveFiles(
         // in 'json' case, we want to copy ALL files (like Archive) as normals
         ? [MapEntry(null, m.files.values.first)]
         // this will put null media first so album shortcuts can link to it
-        : m.files.entries
-            .sorted((a, b) => (a.key ?? '').compareTo(b.key ?? ''));
+        : m.files.entries.sorted((a, b) => (a.key ?? '').compareTo(b.key ?? ''));
     // iterate over all media of file to do something about them
     // ignore non-nulls with 'ignore', copy with 'duplicate-copy',
     // symlink with 'shortcut' etc
@@ -129,12 +128,9 @@ Stream<int> moveFiles(
       /// moves/copies file with safe name
       // it's here because we do this for two cases
       moveFile() async {
-        final freeFile = findNotExistingName(
-            File(p.join(folder.path, p.basename(file.value.path))));
+        final freeFile = findNotExistingName(File(p.join(folder.path, p.basename(file.value.path))));
         try {
-          return copy
-              ? await file.value.copy(freeFile.path)
-              : await file.value.rename(freeFile.path);
+          return copy ? await file.value.copy(freeFile.path) : await file.value.rename(freeFile.path);
         } on FileSystemException {
           print(
             "Uh-uh, it looks like you selected other output drive than\n"
@@ -169,10 +165,9 @@ Stream<int> moveFiles(
 
       // Done! Now, set the date:
 
-      var time = m.dateTaken ?? DateTime.now();
+      DateTime time = m.dateTaken ?? DateTime.now();
       if (Platform.isWindows && time.isBefore(DateTime(1970))) {
-        print(
-            'WARNING: ${m.firstFile.path} has date $time, which is before 1970 '
+        print('WARNING: ${m.firstFile.path} has date $time, which is before 1970 '
             '(not supported on Windows) - will be set to 1970-01-01');
         time = DateTime(1970);
       }
@@ -193,14 +188,12 @@ Stream<int> moveFiles(
       yield ++i;
 
       if (albumBehavior == 'json') {
-        infoJson[p.basename(result.path)] =
-            m.files.keys.whereNotNull().toList();
+        infoJson[p.basename(result.path)] = m.files.keys.whereNotNull().toList();
       }
     }
     // done with this media - next!
   }
   if (albumBehavior == 'json') {
-    await File(p.join(output.path, 'albums-info.json'))
-        .writeAsString(jsonEncode(infoJson));
+    await File(p.join(output.path, 'albums-info.json')).writeAsString(jsonEncode(infoJson));
   }
 }

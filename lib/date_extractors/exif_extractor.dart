@@ -1,41 +1,36 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:exif/exif.dart';
-import 'package:gpth/utils.dart';
 import 'package:mime/mime.dart';
 
-/// DateTime from exif data *potentially* hidden within a [file]
-///
-/// You can try this with *any* file, it either works or not 🤷
+const int maxFileSize = 32 * 1024 * 1024; // 32 MiB
+
 Future<DateTime?> exifExtractor(File file) async {
-  // if file is not image or >32MiB - DO NOT crash :D
-  if (!(lookupMimeType(file.path)?.startsWith('image/') ?? false) ||
-      await file.length() > maxFileSize) {
+  // Check if the file is an image and its size is within the limit
+  if (!(lookupMimeType(file.path)?.startsWith('image/') ?? false) || await file.length() > maxFileSize) {
     return null;
   }
-  // NOTE: reading whole file may seem slower than using readExifFromFile
-  // but while testing it was actually 2x faster on my pc 0_o
-  // i have nvme + btrfs, but still, will leave as is
+
+  // Read the file bytes
   final bytes = await file.readAsBytes();
-  // this returns empty {} if file doesn't have exif so don't worry
+
+  // Extract EXIF tags from the bytes
   final tags = await readExifFromBytes(bytes);
-  String? datetime;
-  // try if any of these exists
-  datetime ??= tags['Image DateTime']?.printable;
-  datetime ??= tags['EXIF DateTimeOriginal']?.printable;
-  datetime ??= tags['EXIF DateTimeDigitized']?.printable;
-  if (datetime == null) return null;
-  // replace all shitty separators that are sometimes met
+
+  // Attempt to retrieve the datetime from various EXIF tags
+  String? datetime = tags['Image DateTime']?.printable ?? tags['EXIF DateTimeOriginal']?.printable ?? tags['EXIF DateTimeDigitized']?.printable;
+  if (datetime == null) {
+    return null;
+  }
+
+  // Normalize the datetime string
   datetime = datetime
-      .replaceAll('-', ':')
-      .replaceAll('/', ':')
-      .replaceAll('.', ':')
-      .replaceAll('\\', ':')
-      .replaceAll(': ', ':0')
-      .substring(0, min(datetime.length, 19))
-      .replaceFirst(':', '-') // replace two : year/month to comply with iso
-      .replaceFirst(':', '-');
-  // now date is like: "1999-06-23 23:55"
+      .replaceAll(RegExp(r'[-/\\.]'), ':') // Replace all separators with ':'
+      .replaceAll(': ', ':0') // Handle space followed by ':'
+      .substring(0, datetime.length < 19 ? datetime.length : 19) // Trim to 19 chars
+      .replaceFirst(':', '-') // Replace first ':' with '-' for ISO compliance
+      .replaceFirst(':', '-'); // Replace second ':' with '-' for ISO compliance
+
+  // Parse the normalized datetime string
   return DateTime.tryParse(datetime);
 }

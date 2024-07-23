@@ -11,7 +11,7 @@ import 'package:gpth/utils.dart';
 /// [dateTakenAccuracy] is a number used to compare with other [Media]. When
 /// you find a duplicate, use one that has lower [dateTakenAccuracy] number.
 /// this and [dateTaken] should either both be null or both filled
-class Media {
+final class Media {
   /// First file with media, used in early stage when albums are not merged
   ///
   /// BE AWARE OF HOW YOU USE IT
@@ -49,9 +49,7 @@ class Media {
 
   /// will be used for finding duplicates/albums
   /// WARNING: Returns same value for files > [maxFileSize]
-  Digest get hash => _hash ??= firstFile.lengthSync() > maxFileSize
-      ? Digest([0])
-      : sha256.convert(firstFile.readAsBytesSync());
+  Digest get hash => _hash ??= firstFile.lengthSync() > maxFileSize ? Digest([0]) : sha256.convert(firstFile.readAsBytesSync());
 
   Media(
     this.files, {
